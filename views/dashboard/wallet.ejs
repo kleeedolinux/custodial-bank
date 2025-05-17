@@ -1,0 +1,174 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <!-- Sidebar -->
+  <div class="md:col-span-1">
+    <div class="bg-white shadow-md rounded p-6 mb-6">
+      <h3 class="text-xl font-semibold mb-4 text-primary">Navigation</h3>
+      <ul class="space-y-2">
+        <li>
+          <a href="/dashboard" class="block py-2 px-4 hover:bg-gray-100 rounded">Dashboard</a>
+        </li>
+        <li>
+          <a href="/dashboard/deposit" class="block py-2 px-4 hover:bg-gray-100 rounded">Deposit</a>
+        </li>
+        <li>
+          <a href="/dashboard/withdraw" class="block py-2 px-4 hover:bg-gray-100 rounded">Withdraw</a>
+        </li>
+        <li>
+          <a href="/dashboard/transactions" class="block py-2 px-4 hover:bg-gray-100 rounded">Transaction History</a>
+        </li>
+        <li>
+          <a href="/dashboard/wallet" class="block py-2 px-4 bg-primary text-white rounded">Wallet Info</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="md:col-span-2">
+    <div class="bg-white shadow-md rounded p-6 mb-6">
+      <h2 class="text-2xl font-bold mb-6 text-primary">Wallet Information</h2>
+      
+      <!-- Wallet Info -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">Your Public Key</h3>
+        <div class="bg-gray-100 p-3 rounded-lg break-all mb-2 font-mono text-sm">
+          <%= publicKey %>
+        </div>
+        <div class="flex justify-end">
+          <button id="copyPublicKey" class="text-primary hover:text-blue-700 text-sm">
+            <i class="fas fa-copy mr-1"></i>Copy
+          </button>
+        </div>
+      </div>
+      
+      <!-- Private Key Access -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">Access Private Key</h3>
+        <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-4">
+          <p class="text-yellow-700">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            Your private key gives full access to your wallet. Never share it with anyone.
+          </p>
+        </div>
+        
+        <form id="viewPrivateKeyForm" class="mb-3">
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="privateKeyPin">
+              Enter your PIN to view private key
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                   id="privateKeyPin" 
+                   name="pin" 
+                   type="password"
+                   inputmode="numeric" 
+                   pattern="[0-9]{4}" 
+                   maxlength="4"
+                   placeholder="Enter your 4-digit PIN"
+                   required>
+          </div>
+          
+          <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            <i class="fas fa-eye mr-2"></i>View Private Key
+          </button>
+        </form>
+        
+        <!-- Private Key Display (Hidden by Default) -->
+        <div id="privateKeyContainer" class="hidden">
+          <div class="bg-gray-100 p-3 rounded-lg break-all mb-2 font-mono text-sm">
+            <span id="privateKeyDisplay">-- Enter PIN to view --</span>
+          </div>
+          <div class="flex justify-end">
+            <button id="copyPrivateKey" class="text-primary hover:text-blue-700 text-sm">
+              <i class="fas fa-copy mr-1"></i>Copy
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Token Information -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">Token Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm font-medium text-gray-700">Token Symbol</p>
+            <p class="font-bold"><%= tokenSymbol %></p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-700">Token Address</p>
+            <p class="font-mono text-sm break-all"><%= tokenAddress %></p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Security Information -->
+      <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <h3 class="font-semibold text-gray-700 mb-2">Security Information</h3>
+        <ul class="list-disc pl-5 text-gray-600 text-sm">
+          <li>Your private key is encrypted with your PIN.</li>
+          <li>We recommend accessing your private key only on secure devices.</li>
+          <li>If you lose your PIN, you will lose access to your private key.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Ensure only numbers can be entered in PIN field
+  document.getElementById('privateKeyPin').addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g, '');
+    if (this.value.length > 4) {
+      this.value = this.value.slice(0, 4);
+    }
+  });
+  
+  // Copy public key to clipboard
+  document.getElementById('copyPublicKey').addEventListener('click', function() {
+    const publicKey = '<%= publicKey %>';
+    navigator.clipboard.writeText(publicKey).then(() => {
+      this.innerHTML = '<i class="fas fa-check mr-1"></i>Copied!';
+      setTimeout(() => {
+        this.innerHTML = '<i class="fas fa-copy mr-1"></i>Copy';
+      }, 2000);
+    });
+  });
+  
+  // View private key form submission
+  document.getElementById('viewPrivateKeyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const pin = document.getElementById('privateKeyPin').value;
+    
+    // Send request to get private key
+    fetch('/dashboard/wallet/show-private-key', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ pin }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById('privateKeyDisplay').textContent = data.privateKey;
+        document.getElementById('privateKeyContainer').classList.remove('hidden');
+        
+        // Copy private key to clipboard
+        document.getElementById('copyPrivateKey').addEventListener('click', function() {
+          navigator.clipboard.writeText(data.privateKey).then(() => {
+            this.innerHTML = '<i class="fas fa-check mr-1"></i>Copied!';
+            setTimeout(() => {
+              this.innerHTML = '<i class="fas fa-copy mr-1"></i>Copy';
+            }, 2000);
+          });
+        });
+      } else {
+        alert('Invalid PIN or error decrypting private key.');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred while fetching your private key.');
+    });
+  });
+</script> 

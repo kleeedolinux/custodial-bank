@@ -1,0 +1,167 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <!-- Sidebar -->
+  <div class="md:col-span-1">
+    <div class="bg-white shadow-md rounded p-6 mb-6">
+      <h3 class="text-xl font-semibold mb-4 text-primary">Admin Menu</h3>
+      <ul class="space-y-2">
+        <li>
+          <a href="/admin/dashboard" class="block py-2 px-4 hover:bg-gray-100 rounded">Dashboard</a>
+        </li>
+        <li>
+          <a href="/admin/transactions" class="block py-2 px-4 hover:bg-gray-100 rounded">All Transactions</a>
+        </li>
+        <li>
+          <a href="/admin/settings" class="block py-2 px-4 bg-primary text-white rounded">Bank Settings</a>
+        </li>
+        <li class="border-t border-gray-200 my-3 pt-3">
+          <a href="/auth/logout" class="block py-2 px-4 hover:bg-gray-100 rounded text-red-500">
+            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="md:col-span-2">
+    <div class="bg-white shadow-md rounded p-6 mb-6">
+      <h2 class="text-2xl font-bold mb-6 text-primary">Bank Settings</h2>
+      
+      <form action="/admin/settings" method="POST">
+        <!-- Bank Info -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-3 text-gray-700">Bank Information</h3>
+          
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="bankName">
+              Bank Name
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                   id="bankName" 
+                   name="bankName" 
+                   type="text" 
+                   value="<%= settings.bankName %>"
+                   required>
+          </div>
+        </div>
+        
+        <!-- Theme Colors -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-3 text-gray-700">Theme Colors</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="primaryColor">
+                Primary Color
+              </label>
+              <div class="flex">
+                <input class="shadow appearance-none border rounded-l w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                       id="primaryColor" 
+                       name="primaryColor" 
+                       type="text" 
+                       value="<%= settings.primaryColor %>"
+                       required>
+                <div class="w-10 h-10 rounded-r border border-l-0" id="primaryColorDisplay"></div>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="secondaryColor">
+                Secondary Color
+              </label>
+              <div class="flex">
+                <input class="shadow appearance-none border rounded-l w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                       id="secondaryColor" 
+                       name="secondaryColor" 
+                       type="text" 
+                       value="<%= settings.secondaryColor %>"
+                       required>
+                <div class="w-10 h-10 rounded-r border border-l-0" id="secondaryColorDisplay"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Token Settings -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-3 text-gray-700">Token Settings</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="tokenSymbol">
+                Token Symbol
+              </label>
+              <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                     id="tokenSymbol" 
+                     name="tokenSymbol" 
+                     type="text" 
+                     value="<%= settings.tokenSymbol %>"
+                     required>
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="tokenAddress">
+                Token Address
+              </label>
+              <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                     id="tokenAddress" 
+                     name="tokenAddress" 
+                     type="text" 
+                     value="<%= settings.tokenAddress %>"
+                     required>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Admin Credentials -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-3 text-gray-700">Admin Credentials</h3>
+          
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="adminUsername">
+              Admin Username
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                   id="adminUsername" 
+                   name="adminUsername" 
+                   type="text" 
+                   value="<%= settings.adminUsername %>"
+                   required>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="adminPassword">
+              Admin Password <span class="text-gray-500 text-xs">(leave blank to keep current)</span>
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                   id="adminPassword" 
+                   name="adminPassword" 
+                   type="password" 
+                   placeholder="Enter new password (or leave blank)">
+          </div>
+        </div>
+        
+        <div class="flex items-center justify-end">
+          <button type="submit" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            Save Settings
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Update color displays when inputs change
+  document.getElementById('primaryColor').addEventListener('input', function() {
+    document.getElementById('primaryColorDisplay').style.backgroundColor = this.value;
+  });
+  
+  document.getElementById('secondaryColor').addEventListener('input', function() {
+    document.getElementById('secondaryColorDisplay').style.backgroundColor = this.value;
+  });
+  
+  // Initialize color displays
+  document.getElementById('primaryColorDisplay').style.backgroundColor = document.getElementById('primaryColor').value;
+  document.getElementById('secondaryColorDisplay').style.backgroundColor = document.getElementById('secondaryColor').value;
+</script> 

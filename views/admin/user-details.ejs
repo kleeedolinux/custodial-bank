@@ -1,0 +1,185 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <!-- Sidebar -->
+  <div class="md:col-span-1">
+    <div class="bg-white shadow-md rounded p-6 mb-6">
+      <h3 class="text-xl font-semibold mb-4 text-primary">Admin Menu</h3>
+      <ul class="space-y-2">
+        <li>
+          <a href="/admin/dashboard" class="block py-2 px-4 hover:bg-gray-100 rounded">Dashboard</a>
+        </li>
+        <li>
+          <a href="/admin/transactions" class="block py-2 px-4 hover:bg-gray-100 rounded">All Transactions</a>
+        </li>
+        <li>
+          <a href="/admin/settings" class="block py-2 px-4 hover:bg-gray-100 rounded">Bank Settings</a>
+        </li>
+        <li class="border-t border-gray-200 my-3 pt-3">
+          <a href="/auth/logout" class="block py-2 px-4 hover:bg-gray-100 rounded text-red-500">
+            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="md:col-span-2">
+    <!-- User Details -->
+    <div class="bg-white shadow-md rounded p-6 mb-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-primary">User Details</h2>
+        <a href="/admin/dashboard" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-arrow-left mr-1"></i>Back to Dashboard
+        </a>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- User Info -->
+        <div>
+          <h3 class="text-lg font-semibold mb-3 text-gray-700">User Information</h3>
+          <table class="w-full">
+            <tr>
+              <td class="py-2 text-gray-600 font-medium">Username:</td>
+              <td class="py-2 font-bold"><%= user.username %></td>
+            </tr>
+            <tr>
+              <td class="py-2 text-gray-600 font-medium">Email:</td>
+              <td class="py-2"><%= user.email %></td>
+            </tr>
+            <tr>
+              <td class="py-2 text-gray-600 font-medium">Status:</td>
+              <td class="py-2">
+                <% if (user.isApproved) { %>
+                  <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs">Approved</span>
+                <% } else { %>
+                  <span class="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full text-xs">Pending</span>
+                <% } %>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 text-gray-600 font-medium">Registration:</td>
+              <td class="py-2"><%= new Date(user.createdAt).toLocaleDateString() %></td>
+            </tr>
+            <tr>
+              <td class="py-2 text-gray-600 font-medium">PIN Set:</td>
+              <td class="py-2">
+                <% if (user.pin) { %>
+                  <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs">Yes</span>
+                <% } else { %>
+                  <span class="bg-red-100 text-red-800 py-1 px-3 rounded-full text-xs">No</span>
+                <% } %>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 text-gray-600 font-medium">Wallet Created:</td>
+              <td class="py-2">
+                <% if (user.publicKey) { %>
+                  <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs">Yes</span>
+                <% } else { %>
+                  <span class="bg-red-100 text-red-800 py-1 px-3 rounded-full text-xs">No</span>
+                <% } %>
+              </td>
+            </tr>
+          </table>
+        </div>
+        
+        <!-- Balance Info -->
+        <div>
+          <h3 class="text-lg font-semibold mb-3 text-gray-700">Balance Information</h3>
+          <div class="space-y-4">
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h4 class="text-sm font-semibold mb-1">SOL Balance</h4>
+              <p class="text-2xl font-bold text-primary"><%= user.solBalance.toFixed(4) %> SOL</p>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h4 class="text-sm font-semibold mb-1"><%= tokenSymbol %> Balance</h4>
+              <p class="text-2xl font-bold text-primary"><%= user.tokenBalance.toFixed(4) %> <%= tokenSymbol %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <% if (!user.isApproved) { %>
+        <div class="mb-6">
+          <form action="/admin/approve-user/<%= user.id %>" method="POST">
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+              Approve User
+            </button>
+          </form>
+        </div>
+      <% } %>
+      
+      <% if (user.publicKey) { %>
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-3 text-gray-700">Wallet Information</h3>
+          <div class="bg-gray-50 p-3 rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">Public Key:</p>
+            <p class="font-mono text-sm break-all mb-4"><%= user.publicKey %></p>
+            <p class="text-sm text-gray-500">
+              <i class="fas fa-info-circle mr-1"></i>
+              Private key is encrypted with user's PIN
+            </p>
+          </div>
+        </div>
+      <% } %>
+    </div>
+    
+    <!-- User Transactions -->
+    <div class="bg-white shadow-md rounded p-6">
+      <h3 class="text-xl font-semibold mb-4 text-primary">User Transactions</h3>
+      
+      <% if (user.transactions && user.transactions.length > 0) { %>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white">
+            <thead>
+              <tr class="bg-gray-100 text-gray-700 uppercase text-sm leading-normal">
+                <th class="py-3 px-6 text-left">Type</th>
+                <th class="py-3 px-6 text-left">Currency</th>
+                <th class="py-3 px-6 text-right">Amount</th>
+                <th class="py-3 px-6 text-center">Status</th>
+                <th class="py-3 px-6 text-right">Date</th>
+              </tr>
+            </thead>
+            <tbody class="text-gray-600 text-sm">
+              <% user.transactions.forEach(function(transaction) { %>
+                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                  <td class="py-3 px-6 text-left">
+                    <% if (transaction.type === 'deposit') { %>
+                      <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs">Deposit</span>
+                    <% } else if (transaction.type === 'withdrawal') { %>
+                      <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-xs">Withdrawal</span>
+                    <% } else { %>
+                      <span class="bg-gray-100 text-gray-800 py-1 px-3 rounded-full text-xs"><%= transaction.type %></span>
+                    <% } %>
+                  </td>
+                  <td class="py-3 px-6 text-left"><%= transaction.currency %></td>
+                  <td class="py-3 px-6 text-right"><%= transaction.amount.toFixed(4) %></td>
+                  <td class="py-3 px-6 text-center">
+                    <% if (transaction.status === 'completed') { %>
+                      <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs">Completed</span>
+                    <% } else if (transaction.status === 'pending') { %>
+                      <span class="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full text-xs">Pending</span>
+                    <% } else { %>
+                      <span class="bg-red-100 text-red-800 py-1 px-3 rounded-full text-xs"><%= transaction.status %></span>
+                    <% } %>
+                  </td>
+                  <td class="py-3 px-6 text-right">
+                    <%= new Date(transaction.createdAt).toLocaleDateString() %>
+                    <span class="text-xs text-gray-500">
+                      <%= new Date(transaction.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                    </span>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="bg-gray-50 p-4 rounded text-center text-gray-500">
+          No transactions yet for this user.
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div> 

@@ -1,0 +1,157 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <!-- Sidebar -->
+  <div class="md:col-span-1">
+    <div class="bg-white shadow-md rounded p-6 mb-6">
+      <h3 class="text-xl font-semibold mb-4 text-primary">Admin Menu</h3>
+      <ul class="space-y-2">
+        <li>
+          <a href="/admin/dashboard" class="block py-2 px-4 hover:bg-gray-100 rounded">Dashboard</a>
+        </li>
+        <li>
+          <a href="/admin/transactions" class="block py-2 px-4 bg-primary text-white rounded">All Transactions</a>
+        </li>
+        <li>
+          <a href="/admin/settings" class="block py-2 px-4 hover:bg-gray-100 rounded">Bank Settings</a>
+        </li>
+        <li class="border-t border-gray-200 my-3 pt-3">
+          <a href="/auth/logout" class="block py-2 px-4 hover:bg-gray-100 rounded text-red-500">
+            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="md:col-span-2">
+    <div class="bg-white shadow-md rounded p-6 mb-6">
+      <h2 class="text-2xl font-bold mb-6 text-primary">All Transactions</h2>
+      
+      <% if (transactions && transactions.length > 0) { %>
+        <!-- Transaction Filters -->
+        <div class="mb-6 flex flex-wrap gap-2">
+          <button class="filter-btn active px-3 py-1 text-sm rounded bg-primary text-white" data-filter="all">
+            All
+          </button>
+          <button class="filter-btn px-3 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300" data-filter="deposit">
+            Deposits
+          </button>
+          <button class="filter-btn px-3 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300" data-filter="withdrawal">
+            Withdrawals
+          </button>
+          <button class="filter-btn px-3 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300" data-filter="SOL">
+            SOL
+          </button>
+          <button class="filter-btn px-3 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300" data-filter="<%= tokenSymbol %>">
+            <%= tokenSymbol %>
+          </button>
+        </div>
+        
+        <!-- Transaction Table -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white" id="transactionsTable">
+            <thead>
+              <tr class="bg-gray-100 text-gray-700 uppercase text-sm leading-normal">
+                <th class="py-3 px-6 text-left">User</th>
+                <th class="py-3 px-6 text-left">Type</th>
+                <th class="py-3 px-6 text-left">Currency</th>
+                <th class="py-3 px-6 text-right">Amount</th>
+                <th class="py-3 px-6 text-center">Status</th>
+                <th class="py-3 px-6 text-right">Date</th>
+              </tr>
+            </thead>
+            <tbody class="text-gray-600 text-sm">
+              <% transactions.forEach(function(transaction) { %>
+                <tr class="border-b border-gray-200 hover:bg-gray-50 transaction-row" 
+                    data-type="<%= transaction.type %>" 
+                    data-currency="<%= transaction.currency %>">
+                  <td class="py-3 px-6 text-left">
+                    <a href="/admin/user/<%= transaction.userId %>" class="text-blue-500 hover:text-blue-700">
+                      <%= transaction.user.username %>
+                    </a>
+                  </td>
+                  <td class="py-3 px-6 text-left">
+                    <% if (transaction.type === 'deposit') { %>
+                      <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs">Deposit</span>
+                    <% } else if (transaction.type === 'withdrawal') { %>
+                      <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-xs">Withdrawal</span>
+                    <% } else { %>
+                      <span class="bg-gray-100 text-gray-800 py-1 px-3 rounded-full text-xs"><%= transaction.type %></span>
+                    <% } %>
+                  </td>
+                  <td class="py-3 px-6 text-left"><%= transaction.currency %></td>
+                  <td class="py-3 px-6 text-right"><%= transaction.amount.toFixed(4) %></td>
+                  <td class="py-3 px-6 text-center">
+                    <% if (transaction.status === 'completed') { %>
+                      <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs">Completed</span>
+                    <% } else if (transaction.status === 'pending') { %>
+                      <span class="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full text-xs">Pending</span>
+                    <% } else { %>
+                      <span class="bg-red-100 text-red-800 py-1 px-3 rounded-full text-xs"><%= transaction.status %></span>
+                    <% } %>
+                  </td>
+                  <td class="py-3 px-6 text-right">
+                    <%= new Date(transaction.createdAt).toLocaleDateString() %>
+                    <span class="text-xs text-gray-500">
+                      <%= new Date(transaction.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                    </span>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- No Results Message (Initially Hidden) -->
+        <div id="noResultsMessage" class="hidden mt-4 p-4 bg-gray-50 rounded text-center text-gray-500">
+          No transactions match the selected filters.
+        </div>
+      <% } else { %>
+        <div class="bg-gray-50 p-4 rounded text-center text-gray-500">
+          No transactions yet in the system.
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Transaction filtering functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const transactionRows = document.querySelectorAll('.transaction-row');
+    const noResultsMessage = document.getElementById('noResultsMessage');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // Toggle active state
+        filterButtons.forEach(btn => btn.classList.remove('active', 'bg-primary', 'text-white'));
+        filterButtons.forEach(btn => btn.classList.add('bg-gray-200', 'hover:bg-gray-300'));
+        this.classList.add('active', 'bg-primary', 'text-white');
+        this.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+        
+        const filter = this.getAttribute('data-filter');
+        let visibleCount = 0;
+        
+        transactionRows.forEach(row => {
+          // Check if row matches filter
+          if (filter === 'all' || 
+              row.getAttribute('data-type') === filter || 
+              row.getAttribute('data-currency') === filter) {
+            row.classList.remove('hidden');
+            visibleCount++;
+          } else {
+            row.classList.add('hidden');
+          }
+        });
+        
+        // Show/hide no results message
+        if (visibleCount === 0 && transactionRows.length > 0) {
+          noResultsMessage.classList.remove('hidden');
+        } else {
+          noResultsMessage.classList.add('hidden');
+        }
+      });
+    });
+  });
+</script> 
